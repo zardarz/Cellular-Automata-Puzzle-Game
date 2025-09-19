@@ -12,7 +12,14 @@ public class CellularAutomata : MonoBehaviour
     [SerializeField] private Tile aliveTile;
     [SerializeField] private Tile borderTile;
 
+    [SerializeField] private string currRulesBeingUsed = "ConwaysGameOfLife";
+
     [SerializeField] private Transform cameraPos;
+
+    [SerializeField] private bool isPlaying = false;
+
+    private float nextActionTime = 0.0f;
+    public float period = 1f; // 10 times a second
 
     void Start() {
         cells = new Cell[size.y, size.x];
@@ -33,7 +40,13 @@ public class CellularAutomata : MonoBehaviour
             SetCell();
         }
 
-        MakeNextGen();
+        if (Time.time > nextActionTime && isPlaying) {
+            nextActionTime += period;
+            print(Time.time);
+
+            MakeNextGen();
+        }
+
         UpdateTileMap();
     }
 
@@ -78,10 +91,63 @@ public class CellularAutomata : MonoBehaviour
     void MakeNextGen() {
         prevGen = (Cell[,]) cells.Clone();
 
-        
+        for(int x = 0; x < size.x; x++) {
+            for(int y = 0; y < size.y; y++) {
+                int numOfLiveCells = 0;
+
+                if(tilemap.GetTile(new(x-1,y-1)) == aliveTile) numOfLiveCells++;
+                if(tilemap.GetTile(new(x,y-1)) == aliveTile) numOfLiveCells++;
+                if(tilemap.GetTile(new(x+1,y-1)) == aliveTile) numOfLiveCells++;
+
+                if(tilemap.GetTile(new(x-1,y)) == aliveTile) numOfLiveCells++;
+                if(tilemap.GetTile(new(x+1,y)) == aliveTile) numOfLiveCells++;
+
+                if(tilemap.GetTile(new(x-1,y+1)) == aliveTile) numOfLiveCells++;
+                if(tilemap.GetTile(new(x,y+1)) == aliveTile) numOfLiveCells++;
+                if(tilemap.GetTile(new(x+1,y+1)) == aliveTile) numOfLiveCells++;
+
+
+
+                string stateOfCell = RunRuleset(numOfLiveCells);
+                print("(" + x + ", " + y + ")" + " : " + numOfLiveCells + " : " + stateOfCell);
+
+                if(stateOfCell.Equals("die")) {
+                    cells[x,y].SetIsAlive(false);
+                } else if (stateOfCell.Equals("born")) {
+                    cells[x,y].SetIsAlive(true);
+                }
+
+            }
+        }
     }
 
-    private bool ConwaysGameOfLife(int numOfLiveCells) {
-        return true;
+    private string RunRuleset(int numOfLiveCells) {
+        if(currRulesBeingUsed.Equals("ConwaysGameOfLife")) {
+            return ConwaysGameOfLife(numOfLiveCells);
+        } else {
+            return "stay";
+        }
+    }
+
+    private string ConwaysGameOfLife(int numOfLiveCells) {
+        if(numOfLiveCells == 2) {
+            return "stay";
+        } else if(numOfLiveCells == 3) {
+            return "born";
+        } else {
+            return "die";
+        }
+    }
+
+    public void Step() {
+        MakeNextGen();
+    }
+
+    public void StartPlaying() {
+        isPlaying = true;
+    }
+
+    public void StopPlaying() {
+        isPlaying = false;
     }
 }
