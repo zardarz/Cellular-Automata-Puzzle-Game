@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Border Tile
   m_EditorClassIdentifier: 
   m_Sprite: {fileID: 7482667652216324306, guid: db6ed5e4a947749a4a56963eee824c35, type: 3}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 0.13333334, g: 0.13333334, b: 0.13333334, a: 1}
   m_Transform:
     e00: 1
     e01: 0

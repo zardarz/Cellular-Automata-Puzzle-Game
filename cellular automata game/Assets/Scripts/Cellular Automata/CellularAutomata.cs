@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -6,15 +5,12 @@ public class CellularAutomata : MonoBehaviour
 {
     [SerializeField] private Vector2Int size;
     private Cell[,] cells;
-    private Cell[,] prevGen;
 
     [SerializeField] private Tilemap tilemap;
+    [SerializeField] private Tilemap buildingAreaTilemap;
     [SerializeField] private Tile aliveTile;
-    [SerializeField] private Tile borderTile;
 
     [SerializeField] private string currRulesBeingUsed = "ConwaysGameOfLife";
-
-    [SerializeField] private Transform cameraPos;
 
     [SerializeField] private bool isPlaying = false;
 
@@ -29,10 +25,6 @@ public class CellularAutomata : MonoBehaviour
                 cells[y, x] = new Cell(new(x,y));
             }
         }
-
-        SetBorderTiles();
-
-        SetCameraPos();
     }
 
     void Update() {
@@ -40,9 +32,10 @@ public class CellularAutomata : MonoBehaviour
             SetCell();
         }
 
-        if (Time.time > nextActionTime && isPlaying) {
-            nextActionTime += period;
-            print(Time.time);
+        nextActionTime -= Time.deltaTime;
+
+        if (nextActionTime <= 0 && isPlaying) {
+            nextActionTime = period;
 
             MakeNextGen();
         }
@@ -53,6 +46,8 @@ public class CellularAutomata : MonoBehaviour
     void SetCell() {
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Vector2Int roundedPos = (Vector2Int) tilemap.WorldToCell(mousePos);
+
+        if(buildingAreaTilemap.GetTile((Vector3Int) roundedPos) == null || isPlaying == true) return;
 
         Cell clickedCell = cells[roundedPos.x, roundedPos.y];
         clickedCell.SetIsAlive(!clickedCell.GetIsAlive());
@@ -72,24 +67,7 @@ public class CellularAutomata : MonoBehaviour
         }
     }
 
-    void SetBorderTiles() {
-        for(int x = -1; x < size.x + 1; x++) {
-            for(int y = -1; y < size.y + 1; y++) {
-                if(x < 0 || y < 0 || x >= size.x || y >= size.y) {
-                    tilemap.SetTile(new(y,x), borderTile);
-                }
-            }
-        }
-    }
-
-    void SetCameraPos() {
-        cameraPos.position = new Vector3(size.x/2, size.y/2, -10);
-
-        cameraPos.gameObject.GetComponent<Camera>().orthographicSize = Math.Max(size.x, size.y)/2 + 2;
-    }
-
     void MakeNextGen() {
-        prevGen = (Cell[,]) cells.Clone();
 
         for(int x = 0; x < size.x; x++) {
             for(int y = 0; y < size.y; y++) {
@@ -106,10 +84,7 @@ public class CellularAutomata : MonoBehaviour
                 if(tilemap.GetTile(new(x,y+1)) == aliveTile) numOfLiveCells++;
                 if(tilemap.GetTile(new(x+1,y+1)) == aliveTile) numOfLiveCells++;
 
-
-
                 string stateOfCell = RunRuleset(numOfLiveCells);
-                print("(" + x + ", " + y + ")" + " : " + numOfLiveCells + " : " + stateOfCell);
 
                 if(stateOfCell.Equals("die")) {
                     cells[x,y].SetIsAlive(false);
