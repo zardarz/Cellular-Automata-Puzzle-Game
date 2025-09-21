@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -9,6 +10,7 @@ public class CellularAutomata : MonoBehaviour
     [SerializeField] private Tilemap tilemap;
     [SerializeField] private Tilemap buildingAreaTilemap;
     [SerializeField] private Tile aliveTile;
+    [SerializeField] private Tile borderTile;
 
     [SerializeField] private string currRulesBeingUsed = "ConwaysGameOfLife";
 
@@ -69,8 +71,14 @@ public class CellularAutomata : MonoBehaviour
 
     void MakeNextGen() {
 
+        int cellsBorn = 0;
+        int cellsDie = 0;
+        int cellsStay = 0;
+
         for(int x = 0; x < size.x; x++) {
             for(int y = 0; y < size.y; y++) {
+                if(tilemap.GetTile(new(x,y,0)) == borderTile) continue;
+
                 int numOfLiveCells = 0;
 
                 if(tilemap.GetTile(new(x-1,y-1)) == aliveTile) numOfLiveCells++;
@@ -87,11 +95,26 @@ public class CellularAutomata : MonoBehaviour
                 string stateOfCell = RunRuleset(numOfLiveCells);
 
                 if(stateOfCell.Equals("die")) {
+                    if(cells[x,y].GetIsAlive())cellsDie++;
                     cells[x,y].SetIsAlive(false);
                 } else if (stateOfCell.Equals("born")) {
+                    if(!cells[x,y].GetIsAlive())cellsBorn++;
                     cells[x,y].SetIsAlive(true);
+                } else {
+                    cellsStay++;
                 }
 
+            }
+        }
+
+        int netCellGain = cellsBorn - cellsDie;
+        print(cellsBorn + " : " + cellsDie);
+
+        for(int i = 0; i < Mathf.Abs(netCellGain); i++) {
+            if(netCellGain > 0) {
+                SoundManager.Play("Cell Come To Life");
+            } else {
+                SoundManager.Play("Cell Die");
             }
         }
     }

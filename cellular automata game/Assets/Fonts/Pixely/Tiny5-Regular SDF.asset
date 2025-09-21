@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71c1514a6bd24e1e882cebbe1904ce04, type: 3}
   m_Name: Tiny5-Regular SDF
   m_EditorClassIdentifier: 
-  hashCode: 0
+  hashCode: 1097453209
   material: {fileID: 595388236699792134}
-  materialHashCode: 0
+  materialHashCode: -181560935
   m_Version: 1.1.0
   m_SourceFontFileGUID: 7c7cbd92a48dd41c78df14dc76a75f2c
   m_SourceFontFile_EditorRef: {fileID: 12800000, guid: 7c7cbd92a48dd41c78df14dc76a75f2c, type: 3}
@@ -2597,9 +2597,9 @@ Material:
     - _OutlineWidth: 0
     - _PerspectiveFilter: 0.875
     - _Reflectivity: 10
-    - _ScaleRatioA: 1
-    - _ScaleRatioB: 1
-    - _ScaleRatioC: 1
+    - _ScaleRatioA: 0.8333333
+    - _ScaleRatioB: 0.6770833
+    - _ScaleRatioC: 0.6770833
     - _ScaleX: 1
     - _ScaleY: 1
     - _ShaderFlags: 0
