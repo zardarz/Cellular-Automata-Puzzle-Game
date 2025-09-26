@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -9,8 +8,14 @@ public class CellularAutomata : MonoBehaviour
 
     [SerializeField] private Tilemap tilemap;
     [SerializeField] private Tilemap buildingAreaTilemap;
+    [SerializeField] private Tilemap areaNeededToWinTileMap;
     [SerializeField] private Tile aliveTile;
     [SerializeField] private Tile borderTile;
+
+    [SerializeField] private int amountOfTilesNeededToBeFilled;
+    private int tilesFilled;
+
+    [SerializeField] private Animator winningGO;
 
     [SerializeField] private string currRulesBeingUsed = "ConwaysGameOfLife";
 
@@ -40,6 +45,7 @@ public class CellularAutomata : MonoBehaviour
             nextActionTime = period;
 
             MakeNextGen();
+            CheckIfWon();
         }
 
         UpdateTileMap();
@@ -95,10 +101,23 @@ public class CellularAutomata : MonoBehaviour
                 string stateOfCell = RunRuleset(numOfLiveCells);
 
                 if(stateOfCell.Equals("die")) {
-                    if(cells[x,y].GetIsAlive())cellsDie++;
+                    if(cells[x,y].GetIsAlive()) {
+                        cellsDie++;
+
+                        if(areaNeededToWinTileMap.HasTile(new(x,y,0))) {
+                            tilesFilled--;
+                        }
+                    }
                     cells[x,y].SetIsAlive(false);
                 } else if (stateOfCell.Equals("born")) {
-                    if(!cells[x,y].GetIsAlive())cellsBorn++;
+                    if(!cells[x,y].GetIsAlive()) {
+                        cellsBorn++;
+
+                        if(areaNeededToWinTileMap.HasTile(new(x,y,0))) {
+                            tilesFilled++;
+                        }
+                    }
+
                     cells[x,y].SetIsAlive(true);
                 } else {
                     cellsStay++;
@@ -108,7 +127,6 @@ public class CellularAutomata : MonoBehaviour
         }
 
         int netCellGain = cellsBorn - cellsDie;
-        print(cellsBorn + " : " + cellsDie);
 
         for(int i = 0; i < Mathf.Abs(netCellGain); i++) {
             if(netCellGain > 0) {
@@ -117,6 +135,8 @@ public class CellularAutomata : MonoBehaviour
                 SoundManager.Play("Cell Die");
             }
         }
+
+        print(tilesFilled + " : " + amountOfTilesNeededToBeFilled);
     }
 
     private string RunRuleset(int numOfLiveCells) {
@@ -134,6 +154,19 @@ public class CellularAutomata : MonoBehaviour
             return "born";
         } else {
             return "die";
+        }
+    }
+
+    private void CheckIfWon() {
+
+        if(tilesFilled > amountOfTilesNeededToBeFilled) {
+            Debug.LogError("oh no");
+        }
+        
+        if(tilesFilled == amountOfTilesNeededToBeFilled) {
+            print("you won");
+            StopPlaying();
+            winningGO.Play("Winning Animation");
         }
     }
 
