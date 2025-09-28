@@ -43,7 +43,7 @@ public class SoundManager : MonoBehaviour
 
         if (!s.looping)
         {
-            Destroy(soundObject, source.clip.length);
+            Destroy(soundObject, source.clip.length + 0.1f);
         }
     }
 }

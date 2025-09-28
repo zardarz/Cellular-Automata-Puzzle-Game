@@ -1,3 +1,4 @@
+using System.Threading;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -15,7 +16,7 @@ public class CellularAutomata : MonoBehaviour
     [SerializeField] private int amountOfTilesNeededToBeFilled;
     private int tilesFilled;
 
-    [SerializeField] private Animator winningGO;
+    [SerializeField] private GameObject canvas;
 
     [SerializeField] private string currRulesBeingUsed = "ConwaysGameOfLife";
 
@@ -31,6 +32,10 @@ public class CellularAutomata : MonoBehaviour
             for(int y = 0; y < size.y; y++) {
                 cells[y, x] = new Cell(new(x,y));
             }
+        }
+
+        if(amountOfTilesNeededToBeFilled != -1) {
+            amountOfTilesNeededToBeFilled = GetAreaNeededToBeFilledCount();
         }
     }
 
@@ -64,12 +69,14 @@ public class CellularAutomata : MonoBehaviour
     void UpdateTileMap() {
         for(int x = 0; x < size.x; x++) {
             for(int y = 0; y < size.y; y++) {
-                Cell currCell = cells[y,x];
+                if(tilemap.GetTile(new(x,y,0)) == borderTile) continue;
+
+                Cell currCell = cells[x,y];
 
                 if(currCell.GetIsAlive()) {
-                    tilemap.SetTile(new(y,x), aliveTile);
+                    tilemap.SetTile(new(x,y), aliveTile);
                 } else {
-                    tilemap.SetTile(new(y,x), null);
+                    tilemap.SetTile(new(x,y), null);
                 }
             }
         }
@@ -83,7 +90,7 @@ public class CellularAutomata : MonoBehaviour
 
         for(int x = 0; x < size.x; x++) {
             for(int y = 0; y < size.y; y++) {
-                if(tilemap.GetTile(new(x,y,0)) == borderTile) continue;
+                
 
                 int numOfLiveCells = 0;
 
@@ -135,17 +142,35 @@ public class CellularAutomata : MonoBehaviour
                 SoundManager.Play("Cell Die");
             }
         }
-
-        print(tilesFilled + " : " + amountOfTilesNeededToBeFilled);
     }
 
     private string RunRuleset(int numOfLiveCells) {
-        if(currRulesBeingUsed.Equals("ConwaysGameOfLife")) {
+        if (currRulesBeingUsed.Equals("ConwaysGameOfLife")) {
             return ConwaysGameOfLife(numOfLiveCells);
+        } else if (currRulesBeingUsed.Equals("LevelOne")) {
+            return LevelOne(numOfLiveCells);
+        } else if (currRulesBeingUsed.Equals("LevelTwo")) {
+            return LevelTwo(numOfLiveCells);
+        } else if (currRulesBeingUsed.Equals("LevelThree")) {
+            return LevelThree(numOfLiveCells);
+        } else if (currRulesBeingUsed.Equals("LevelFour")) {
+            return LevelFour(numOfLiveCells);
+        } else if (currRulesBeingUsed.Equals("LevelFive")) {
+            return LevelFive(numOfLiveCells);
+        } else if (currRulesBeingUsed.Equals("LevelSix")) {
+            return LevelSix(numOfLiveCells);
+        } else if (currRulesBeingUsed.Equals("LevelSeven")) {
+            return LevelSeven(numOfLiveCells);
+        } else if (currRulesBeingUsed.Equals("LevelEight")) {
+            return LevelEight(numOfLiveCells);
+        } else if (currRulesBeingUsed.Equals("LevelNine")) {
+            return LevelNine(numOfLiveCells);
         } else {
+            Debug.LogError(currRulesBeingUsed + " does not exsist");
             return "stay";
         }
     }
+
 
     private string ConwaysGameOfLife(int numOfLiveCells) {
         if(numOfLiveCells == 2) {
@@ -157,6 +182,62 @@ public class CellularAutomata : MonoBehaviour
         }
     }
 
+    private string LevelOne(int numOfLiveCells) {
+        if(numOfLiveCells >= 1) {
+            return "born";
+        } else {
+            return "stay";
+        }
+    }
+
+    private string LevelTwo(int numOfLiveCells) {
+        if(numOfLiveCells >= 3) {
+            return "born";
+        }
+
+        return "stay";
+    }
+
+    private string LevelThree(int numOfLiveCells) {
+        if(numOfLiveCells == 1) {
+            return "born";
+        } else if (numOfLiveCells > 1) {
+            return "stay";
+        } else {
+            return "die";
+        }
+    }
+
+    private string LevelFour(int numOfLiveCells) {
+        return ConwaysGameOfLife(numOfLiveCells);
+    }
+
+    private string LevelFive(int numOfLiveCells) {
+        // TODO: Implement LevelFive rules
+        return $"LevelFive executed with {numOfLiveCells} live cells.";
+    }
+
+    private string LevelSix(int numOfLiveCells) {
+        // TODO: Implement LevelSix rules
+        return $"LevelSix executed with {numOfLiveCells} live cells.";
+    }
+
+    private string LevelSeven(int numOfLiveCells) {
+        // TODO: Implement LevelSeven rules
+        return $"LevelSeven executed with {numOfLiveCells} live cells.";
+    }
+
+    private string LevelEight(int numOfLiveCells) {
+        // TODO: Implement LevelEight rules
+        return $"LevelEight executed with {numOfLiveCells} live cells.";
+    }
+
+private string LevelNine(int numOfLiveCells) {
+    // TODO: Implement LevelNine rules
+    return $"LevelNine executed with {numOfLiveCells} live cells.";
+}
+
+
     private void CheckIfWon() {
 
         if(tilesFilled > amountOfTilesNeededToBeFilled) {
@@ -166,7 +247,13 @@ public class CellularAutomata : MonoBehaviour
         if(tilesFilled == amountOfTilesNeededToBeFilled) {
             print("you won");
             StopPlaying();
-            winningGO.Play("Winning Animation");
+
+            canvas.transform.GetChild(1).gameObject.SetActive(false);
+            canvas.transform.GetChild(2).gameObject.SetActive(false);
+            canvas.transform.GetChild(3).gameObject.SetActive(!canvas.transform.GetChild(3).gameObject.activeSelf);
+            canvas.transform.GetChild(4).gameObject.SetActive(!canvas.transform.GetChild(4).gameObject.activeSelf);
+
+            SoundManager.Play("yay" + Random.Range(1,3).ToString());
         }
     }
 
@@ -180,5 +267,19 @@ public class CellularAutomata : MonoBehaviour
 
     public void StopPlaying() {
         isPlaying = false;
+    }
+
+    private int GetAreaNeededToBeFilledCount() {
+        int count = 0;
+
+        for(int x = 0; x < size.x; x++) {
+            for(int y = 0; y < size.y; y++) {
+                if(areaNeededToWinTileMap.GetTile(new(x,y,0)) != null) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
     }
 }
