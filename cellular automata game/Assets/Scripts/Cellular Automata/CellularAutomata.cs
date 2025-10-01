@@ -1,4 +1,5 @@
 using System.Threading;
+using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -25,7 +26,7 @@ public class CellularAutomata : MonoBehaviour
     private float nextActionTime = 0.0f;
     public float period = 1f; // 10 times a second
 
-    void Start() {
+    void Awake() {
         cells = new Cell[size.y, size.x];
 
         for(int x = 0; x < size.x; x++) {
@@ -36,6 +37,14 @@ public class CellularAutomata : MonoBehaviour
 
         if(amountOfTilesNeededToBeFilled != -1) {
             amountOfTilesNeededToBeFilled = GetAreaNeededToBeFilledCount();
+        }
+
+        for(int x = 0; x < size.x; x++) {
+            for(int y = 0; y < size.y; y++) {
+                if(tilemap.GetTile(new(x,y,0)) == aliveTile) {
+                    cells[x,y].SetIsAlive(true);
+                }
+            }
         }
     }
 
@@ -161,10 +170,6 @@ public class CellularAutomata : MonoBehaviour
             return LevelSix(numOfLiveCells);
         } else if (currRulesBeingUsed.Equals("LevelSeven")) {
             return LevelSeven(numOfLiveCells);
-        } else if (currRulesBeingUsed.Equals("LevelEight")) {
-            return LevelEight(numOfLiveCells);
-        } else if (currRulesBeingUsed.Equals("LevelNine")) {
-            return LevelNine(numOfLiveCells);
         } else {
             Debug.LogError(currRulesBeingUsed + " does not exsist");
             return "stay";
@@ -213,29 +218,22 @@ public class CellularAutomata : MonoBehaviour
     }
 
     private string LevelFive(int numOfLiveCells) {
-        // TODO: Implement LevelFive rules
-        return $"LevelFive executed with {numOfLiveCells} live cells.";
+        return ConwaysGameOfLife(numOfLiveCells);
     }
 
     private string LevelSix(int numOfLiveCells) {
-        // TODO: Implement LevelSix rules
-        return $"LevelSix executed with {numOfLiveCells} live cells.";
+        return ConwaysGameOfLife(numOfLiveCells);
     }
 
     private string LevelSeven(int numOfLiveCells) {
-        // TODO: Implement LevelSeven rules
-        return $"LevelSeven executed with {numOfLiveCells} live cells.";
+        if (numOfLiveCells <= 2) {
+            return "stay";
+        } else if(numOfLiveCells > 3) {
+            return "born";
+        } else {
+            return "die";
+        }
     }
-
-    private string LevelEight(int numOfLiveCells) {
-        // TODO: Implement LevelEight rules
-        return $"LevelEight executed with {numOfLiveCells} live cells.";
-    }
-
-private string LevelNine(int numOfLiveCells) {
-    // TODO: Implement LevelNine rules
-    return $"LevelNine executed with {numOfLiveCells} live cells.";
-}
 
 
     private void CheckIfWon() {
